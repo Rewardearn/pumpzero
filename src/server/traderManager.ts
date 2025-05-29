@@ -66,6 +66,7 @@ function updateTraderProfitTier(
 
     // Add to new tier set if newTier is not null
     if (newTier) {
+      
       switch (newTier) {
         case ProfitTier.TIER1:
           global.pumpFunState.profitTierTraders.tier1.add(traderAddress);
@@ -114,7 +115,7 @@ function updateTraderProfitTier(
     );
     tradedMints.forEach((mint) => {
       if (newTier !== null) {
-        updateTokenTraderTiers(mint, traderAddress, newTier);
+        updateTokenTraderTiers(mint, traderAddress, newTier,traderData);
         updateTierStats(mint); // Ensure tiertransactions and stats are updated
       }
     });
@@ -217,12 +218,12 @@ export function recordTraderTransaction(
 
 
   if (txType === "buy" && traderData.profitTier && typeof tokenAmount === "number") {
-    updateTokenTraderTiers(mint, traderAddress, traderData.profitTier);
+    updateTokenTraderTiers(mint, traderAddress, traderData.profitTier,traderData);
     
   }
 
   if (txType === "sell" && traderData.profitTier && typeof tokenAmount === "number") {
-  updateTokenTraderTiers(mint, traderAddress, traderData.profitTier);
+  updateTokenTraderTiers(mint, traderAddress, traderData.profitTier,traderData);
 }
 
 

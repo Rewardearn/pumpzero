@@ -39,7 +39,9 @@ export interface TokenData {
   totalTransactions?: number;
   lastTradeType?: 'buy' | 'sell';
   lastTradeAmount?: number;
+  lastTradeTokenAmount?: number; // Number of tokens in the last trade
   transactionsBuffer?: number;
+  lastpricetobondingcurve?: number; // Last price to bonding curve ratio
   // New fields for trader profit tier tracking
   traderTiers?: TokenTraderTiers;
   tiertransactions?: TraderTransactionTiers[];
@@ -99,13 +101,13 @@ export interface TraderData {
 }
 
 export interface TraderTransaction {
-  signature?: string;
+  signature?: string | null;
   mint: string;
   txType: 'buy' | 'sell';
   amount: number;
-  tokenAmount?: number; // Number of tokens (add this)
+  tokenAmount?: number | null;
   timestamp: Date;
-  profit?: number;
+  profit?: number | null;
 }
 
 export interface TraderTransactionTiers {
@@ -116,7 +118,7 @@ export interface TraderTransactionTiers {
   traderPublicKey?: string;
   txType: 'buy' | 'sell';
   amount: number;
-  tokenAmount?: number; // Number of tokens (add this)
+  tokenAmount?: number | null; // Number of tokens (add this)
   timestamp: Date;
   profit?: number;
 }

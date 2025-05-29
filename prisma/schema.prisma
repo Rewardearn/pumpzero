@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Trader {
+  address             String              @id
+  totalProfit         Float
+  profitTier         ProfitTier?
+  lastActiveTimestamp DateTime
+  transactions        TraderTransaction[]
+}
+
+model TraderTransaction {
+  id            Int      @id @default(autoincrement())
+  traderAddress String
+  signature     String?
+  mint          String
+  txType        String
+  amount        Float
+  tokenAmount   Float?
+  timestamp     DateTime
+  profit        Float?
+  trader        Trader   @relation(fields: [traderAddress], references: [address])
+}
+
+
+enum ProfitTier {
+  TIER1
+  TIER2
+  TIER3
+  TIER4
+  TIER5
+  TIER6
+  TIER7
+  TIER8
+}

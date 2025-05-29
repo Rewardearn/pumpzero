@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, JSX } from "react";
 import { FaTelegram, FaTwitter, FaGlobeAmericas, FaCog } from "react-icons/fa";
 import { TokenData, FilterValues } from "@/types/tokens";
 import SettingsModal from "./SettingsModal";
@@ -607,6 +607,44 @@ function WebSocketComponent({
     }
   };
 
+   const formatMarketCapUsdP = (marketCapSol: number | undefined): JSX.Element => {
+  const marketCapUsd = (marketCapSol || 0) * solanaPrice;
+  const mcprice = marketCapUsd / 1000000000;
+
+  const zeros = countLeadingZerosInDecimal(mcprice);
+  const last3 = (mcprice * Math.pow(10, zeros + 3)).toFixed();
+
+  return (
+    <span>
+      0.0<sub>{zeros}</sub>{last3}
+    </span>
+  );
+};
+
+function getInversePercentage(value:number, min:number, max:number): number {
+  if (max === min) return 100; // avoid division by zero
+  let inverse = (1 - (value - min) / (max - min)) * 100;
+  return Math.max(0, Math.min(100, inverse)); // clamp between 0 and 100
+}
+
+
+  function countLeadingZerosInDecimal(price : number): number {
+  // Convert price to string with sufficient decimal places
+  const priceStr = price.toFixed(10); // Use 10 to handle small numbers
+  // Split into integer and decimal parts
+  const [, decimalPart] = priceStr.split('.');
+  // Count leading zeros in decimal part
+  let zeroCount = 0;
+  for (let i = 0; i < decimalPart.length; i++) {
+    if (decimalPart[i] === '0') {
+      zeroCount++;
+    } else {
+      break; // Stop counting when a non-zero digit is found
+    }
+  }
+  return zeroCount;
+}
+
   // Calculate time ago
   const getTimeAgo = (timestamp: Date | string): string => {
     const now = new Date();
@@ -1186,8 +1224,14 @@ function WebSocketComponent({
                   >
                     {(token.priceChangePercent ?? 0) >= 0 ? "+" : ""}
                     {token.priceChangePercent?.toFixed(2)}%
-                  </span>{" "}
-                  |
+                  </span>
+                  |<span>
+                    Price :{" "}
+                    {formatMarketCapUsdP(token.marketCapSol)}
+                  </span>|
+                  <span>
+                      {((token.marketCapSol ?? 0) * solanaPrice) <= 82000 ? (100 - getInversePercentage(token.vTokensInBondingCurve ?? 0, 1072999999, 279900000)).toFixed() : 100}%
+                  </span>
                 </span>
               </div>
 
@@ -1318,6 +1362,7 @@ function WebSocketComponent({
                   </div>
                 )}
               </div>
+              
               <div className="flex gap-1 w-full mt-2">
                 {[
                   {

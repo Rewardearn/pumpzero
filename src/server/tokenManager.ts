@@ -1,6 +1,7 @@
 import { WebSocket } from "ws";
-import { TokenData, ProfitTier} from "../types/tokens";
+import { TokenData, ProfitTier, TraderData} from "../types/tokens";
 import { initGlobalState } from "./globalState";
+import { TraderService } from "./trader-service";
 
 // Get the token store and price info
 export function getTokenStore() {
@@ -158,7 +159,8 @@ export function subscribeToTokenTrades(ws: WebSocket, mint: string): void {
 export function updateTokenTraderTiers(
   mint: string,
   traderAddress: string,
-  profitTier: ProfitTier
+  profitTier: ProfitTier,
+  TraderData: TraderData
 ): void {
   if (!global.pumpFunState || !Array.isArray(global.pumpFunState.tokenStore)) {
     console.log(
@@ -166,6 +168,8 @@ export function updateTokenTraderTiers(
     );
     return;
   }
+
+  const traderService = new TraderService();
 
   const tokenIndex = global.pumpFunState.tokenStore.findIndex(
     (token) => token && token.mint === mint
@@ -197,6 +201,7 @@ export function updateTokenTraderTiers(
 
     if (existingTraderIndex >= 0) {
       console.log("Updating existing trader tier", profitTier);
+      traderService.updateTrader(traderAddress,TraderData);
       const existingTrader = token.traderTiers.traders[existingTraderIndex];
       if (existingTrader.profitTier !== profitTier) {
         // Decrement old tier count
@@ -258,12 +263,16 @@ export function updateTokenTraderTiers(
       }
     } else {
       console.log("Adding new trader to token trader tiers", profitTier);
+     
+
+       
       // Add new trader to the list
       token.traderTiers.traders.push({
         address: traderAddress,
         profitTier: profitTier,
         buyTimestamp: new Date(),
       });
+      traderService.createTrader(TraderData)
       // Increment tier count
       switch (profitTier) {
         case ProfitTier.TIER1:

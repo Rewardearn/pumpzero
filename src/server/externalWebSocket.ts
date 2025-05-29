@@ -97,6 +97,7 @@ export async function connectToExternalWS(wss: WebSocketServer) {
           return;
         }
 
+
         // Only log non-ping messages to avoid spamming
         if (!data.method || data.method !== "ping") {
           // console.log('Received data from external WebSocket:', data);
@@ -185,6 +186,8 @@ export async function connectToExternalWS(wss: WebSocketServer) {
                   );
                   profit = 0;
                 }
+
+                
 
                 // Record transaction
                 recordTraderTransaction(
@@ -337,6 +340,7 @@ export async function connectToExternalWS(wss: WebSocketServer) {
           data.txType &&
           (data.txType === "buy" || data.txType === "sell")
         ) {
+
           if (tokenIndex >= 0) {
             const token = globalTokens[tokenIndex];
             const currentPriceUsd = data.marketCapSol
@@ -356,6 +360,10 @@ export async function connectToExternalWS(wss: WebSocketServer) {
             const updatedtopMarketCapSol =
               currentMarketCap > topMcap ? currentMarketCap : topMcap;
 
+              const pricea = (data.marketCapSol * global.pumpFunState.solanaPrice) / TOTAL_SUPPLY;
+              const priceb = (data.vSolInBondingCurve/ data.vTokensInBondingCurve)* global.pumpFunState.solanaPrice;
+
+
             const updatedToken = {
               ...token,
               hasNewTrade: true,
@@ -363,6 +371,7 @@ export async function connectToExternalWS(wss: WebSocketServer) {
               txType: data.txType,
               lastTradeType: data.txType,
               lastTradeAmount: data.solAmount || 0,
+              lastTradeTokenAmount: data.tokenAmount || 0,
               tradeBuys:
                 token.txType === "buy"
                   ? (token.tradeBuys || 0) + 1
@@ -392,6 +401,7 @@ export async function connectToExternalWS(wss: WebSocketServer) {
                 data.vTokensInBondingCurve !== undefined
                   ? data.vTokensInBondingCurve
                   : token.vTokensInBondingCurve,
+                lastpricetobondingcurve: pricea == priceb ? pricea : token.lastpricetobondingcurve,
             };
 
             global.pumpFunState.tokenStore.splice(tokenIndex, 1);
@@ -475,13 +485,17 @@ export async function connectToExternalWS(wss: WebSocketServer) {
               tradeCount: 1, // Assuming we got here because of a trade
               lastTradeType: data.txType as "buy" | "sell" | undefined,
               lastTradeAmount: data.solAmount || 0,
+              
               // Initialize trader tiers
               traderTiers: {
-                tier1Count: 0,
-                tier2Count: 0,
-                tier3Count: 0,
-                tier4Count: 0,
-                tier5Count: 0,
+                tier1: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier2: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier3: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier4: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier5: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier6: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier7: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
+                tier8: { count: 0, percentage: 0 ,sumBuys: 0, sumSells: 0},
                 traders: [],
               },
             };
